@@ -4,7 +4,12 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Pokemon extends Model {
     static associate(models) {
-      // Define associations here if necessary
+      // Définir l'association many-to-many avec les utilisateurs via PokemonTeam
+      Pokemon.belongsToMany(models.User, {
+        through: models.PokemonTeam,
+        foreignKey: 'pokemonId',
+        as: 'users'
+      });
     }
   }
 

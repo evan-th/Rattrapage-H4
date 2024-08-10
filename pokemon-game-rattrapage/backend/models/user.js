@@ -20,13 +20,12 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.JSON,  // Stocker l'équipe comme un objet JSON
             allowNull: true
         }
-    }, {
-        // options de configuration du modèle
     });
 
     User.associate = (models) => {
-        // Définir les associations ici si nécessaire
-        User.hasMany(models.Pokemon, {
+        // Définir l'association many-to-many avec les Pokémon via PokemonTeam
+        User.belongsToMany(models.Pokemon, {
+            through: models.PokemonTeam,
             foreignKey: 'userId',
             as: 'pokemons'
         });

@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const { User } = require('../models');  // Assurez-vous que le modèle User est bien importé
+const { User } = require('../models');
 
 const router = express.Router();
 
@@ -50,10 +50,25 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Mot de passe incorrect.' });
         }
 
+        // Stocker l'ID utilisateur dans la session
+        req.session.userId = user.id;
+
+
+
+        // Afficher l'ID utilisateur dans la console
+        console.log('Utilisateur connecté avec l\'ID:', user.id);
+        console.log('Session après connexion:', req.session);
+        global.currentUserId = user.id;
+
+        // Afficher l'ID utilisateur dans la console
+        console.log('Utilisateur connecté avec l\'ID:', global.currentUserId);
+
         res.status(200).json({ message: 'Connexion réussie.', user });
     } catch (error) {
         res.status(500).json({ error: 'Erreur lors de la connexion.' });
     }
 });
+
+
 
 module.exports = router;

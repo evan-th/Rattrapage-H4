@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const navigate = useNavigate(); // Utiliser useNavigate pour la redirection
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -25,6 +28,7 @@ function Login() {
         setSuccess('Connexion réussie !');
         setEmail('');
         setPassword('');
+        navigate('/menu'); // Rediriger vers le MainMenu après une connexion réussie
       }
     } catch (err) {
       setError('Erreur lors de la connexion. Veuillez réessayer.');
@@ -83,6 +87,17 @@ function Login() {
             </button>
           </div>
         </form>
+        <div className="text-center mt-4">
+          <p>
+            Pas encore de compte ?{' '}
+            <button
+              className="text-blue-500 hover:underline"
+              onClick={() => navigate('/')}
+            >
+              Inscrivez-vous
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

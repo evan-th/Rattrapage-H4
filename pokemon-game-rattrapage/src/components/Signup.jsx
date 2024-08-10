@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Login from './Login'; // Assurez-vous d'avoir créé le composant Login.js
+import { useNavigate } from 'react-router-dom';
 
 function Signup() {
   const [username, setUsername] = useState('');
@@ -8,7 +8,8 @@ function Signup() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showLogin, setShowLogin] = useState(false); // État pour basculer entre inscription et connexion
+
+  const navigate = useNavigate(); // Utiliser useNavigate pour la redirection
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -30,16 +31,12 @@ function Signup() {
         setUsername('');
         setEmail('');
         setPassword('');
+        navigate('/menu'); // Rediriger vers le MainMenu après une inscription réussie
       }
     } catch (err) {
       setError("Erreur lors de l'inscription. Veuillez réessayer.");
     }
   };
-
-  // Si showLogin est true, afficher le composant Login à la place
-  if (showLogin) {
-    return <Login />;
-  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -115,7 +112,7 @@ function Signup() {
             Vous avez déjà un compte ?{' '}
             <button
               className="text-blue-500 hover:underline"
-              onClick={() => setShowLogin(true)}
+              onClick={() => navigate('/login')}
             >
               Connexion
             </button>
