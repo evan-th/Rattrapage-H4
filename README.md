@@ -25,8 +25,10 @@ Avant de commencer, assurez-vous d'avoir les éléments suivants installés sur 
 
    ```bash
    git clone https://github.com/evan-th/Rattrapage-H4.git
-   cd pokemon-game-rattrapage
+   ```
 
+   ```bash
+   cd pokemon-game-rattrapage
    ```
 
 2. **Installer les dépendances :**
