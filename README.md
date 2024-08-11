@@ -39,6 +39,7 @@ Installez toutes les dépendances nécessaires pour le projet en exécutant :
 
 Exécutez les migrations pour créer les tables nécessaires :
 `cd backend`
+
 `npx sequelize-cli db:migrate`
 
 4. **Remplir la base de données avec des données initiales :**
