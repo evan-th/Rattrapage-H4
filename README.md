@@ -75,129 +75,81 @@ Le jeu Pokémon Rattrapage H4 est un jeu de combat où le joueur doit affronter 
 
 # Pokémon Game - API Documentation
 
-## Base URL
+## API Base URL
 
 http://localhost:5001/api
 
-## Authentification et Gestion des Utilisateurs
+### Authentification et Gestion des Utilisateurs
 
 ### 1. **POST `/api/users/register`**
 
 - **Description :** Créer un compte utilisateur.
 - **Corps de la requête :**
-  ```json
+  ````json
   {
       "username": "string",
       "email": "string",
       "password": "string"
+  }```
+  ````
+
+### 2. **POST `/api/users/login`**
+
+- **Description :** Connexion d'un utilisateur.
+- **Corps de la requête :**
+  ````json
+  {
+      "email": "string",
+      "password": "string"
+  }```
+  ````
+
+### Gestion des Pokémon
+
+#### 1. **GET `/api/pokemons`**
+
+- **Description :** Récupérer la liste de tous les Pokémon disponibles.
+
+#### 2. **GET `/api/pokemons/:id`**
+
+- **Description :** Récupérer les informations d'un Pokémon spécifique par son ID, y compris ses capacités (moves).
+- **Paramètres de l'URL :**
+  - `id` : ID du Pokémon.
+
+#### 3. **POST `/api/pokemons/add-pokemon`**
+
+- **Description :** Ajouter un Pokémon généré aléatoirement à la collection d'un utilisateur.
+- **Corps de la requête :**
+  ```json
+  {
+    "pokemonId": "number"
   }
-  Réponse :
-  201 : Utilisateur créé avec succès.
-  400 : Un utilisateur avec cet email existe déjà.
-  500 : Erreur lors de la création de l'utilisateur.
   ```
 
-2. POST /api/users/login
-   Description : Connexion d'un utilisateur.
-   Corps de la requête :
-   json
-   Copier le code
-   {
-   "email": "string",
-   "password": "string"
-   }
-   Réponse :
-   200 : Connexion réussie.
-   400 : Utilisateur non trouvé ou mot de passe incorrect.
-   500 : Erreur lors de la connexion.
-3. POST /api/users/logout
-   Description : Déconnexion de l'utilisateur (non fourni dans le code, mais habituellement attendu).
-   Réponse :
-   200 : Déconnexion réussie.
-   500 : Erreur lors de la déconnexion.
-4. GET /check-session
-   Description : Vérifier si l'utilisateur est connecté.
-   Réponse :
-   200 : Session active avec l'ID de l'utilisateur.
-   401 : Session non active.
-   Gestion des Pokémon
-5. GET /api/pokemons
-   Description : Récupérer la liste de tous les Pokémon disponibles.
-   Réponse :
-   200 : Liste de tous les Pokémon.
-   500 : Erreur lors de la récupération des Pokémon.
-6. GET /api/pokemons/:id
-   Description : Récupérer les informations d'un Pokémon spécifique par son ID, y compris ses capacités (moves).
-   Paramètres de l'URL :
-   id : ID du Pokémon.
-   Réponse :
-   200 : Informations sur le Pokémon avec ses moves.
-   404 : Pokémon non trouvé.
-   500 : Erreur serveur.
-7. POST /api/pokemons/add-pokemon
-   Description : Ajouter un Pokémon généré aléatoirement à la collection d'un utilisateur.
-   Corps de la requête :
-   json
-   Copier le code
-   {
-   "pokemonId": "number"
-   }
-   Réponse :
-   200 : Pokémon ajouté à l'équipe ou capturé (mais non ajouté à l'équipe si elle est déjà complète).
-   401 : Utilisateur non authentifié.
-   404 : Utilisateur ou Pokémon non trouvé.
-   500 : Erreur serveur.
-8. GET /api/pokemons/user/team
-   Description : Récupérer l'équipe de Pokémon active d'un utilisateur, y compris leurs capacités.
-   Réponse :
-   200 : Liste des Pokémon de l'équipe avec leurs moves.
-   401 : Utilisateur non authentifié.
-   404 : Utilisateur non trouvé.
-   500 : Erreur serveur.
-9. GET /api/pokemons/user/pokemons
-   Description : Récupérer tous les Pokémon possédés par un utilisateur, y compris leurs capacités.
-   Réponse :
-   200 : Liste de tous les Pokémon de l'utilisateur avec leurs moves.
-   401 : Utilisateur non authentifié.
-   404 : Utilisateur non trouvé.
-   500 : Erreur serveur.
-10. POST /api/pokemons/remove-from-team
-    Description : Retirer un Pokémon de l'équipe active de l'utilisateur.
-    Corps de la requête :
-    json
-    Copier le code
-    {
+#### 4. **GET `/api/pokemons/user/team`**
+
+- **Description :** Récupérer l'équipe de Pokémon active d'un utilisateur, y compris leurs capacités.
+
+#### 5. **GET `/api/pokemons/user/pokemons`**
+
+- **Description :** Récupérer tous les Pokémon possédés par un utilisateur, y compris leurs capacités.
+
+#### 6. **POST `/api/pokemons/remove-from-team`**
+
+- **Description :** Retirer un Pokémon de l'équipe active de l'utilisateur.
+- **Corps de la requête :**
+  ```json
+  {
     "pokemonId": "number"
-    }
-    Réponse :
-    200 : Pokémon retiré de l'équipe.
-    401 : Utilisateur non authentifié.
-    404 : Pokémon non trouvé dans l'équipe.
-    500 : Erreur serveur.
-11. POST /api/pokemons/add-to-team
-    Description : Ajouter un Pokémon de la collection d'un utilisateur à son équipe active.
-    Corps de la requête :
-    json
-    Copier le code
-    {
+  }
+  ```
+
+#### 7. **POST `/api/pokemons/add-to-team`**
+
+- **Description :** Ajouter un Pokémon de la collection d'un utilisateur à son équipe active.
+- **Corps de la requête :**
+  ```json
+  {
     "pokemonId": "number"
-    }
-    Réponse :
-    200 : Pokémon ajouté à l'équipe.
-    401 : Utilisateur non authentifié.
-    404 : Pokémon non trouvé.
-    500 : Erreur serveur.
-    Exemple de Flux Utilisateur
-    Inscription :
-    L'utilisateur s'inscrit via /api/users/register.
-    Connexion :
-    L'utilisateur se connecte via /api/users/login.
-    La session utilisateur est stockée.
-    Ajout de Pokémon :
-    L'utilisateur génère des Pokémon via /api/pokemons/add-pokemon.
-    Les Pokémon générés peuvent être ajoutés à l'équipe via /api/pokemons/add-to-team.
-    Gestion de l'équipe :
-    L'utilisateur peut voir son équipe via /api/pokemons/user/team.
-    Il peut aussi gérer son équipe (ajout/retrait de Pokémon) via /api/pokemons/remove-from-team et /api/pokemons/add-to-team.
-    Combats :
-    Le jeu de combat peut ensuite être lancé, en utilisant les Pokémon et leurs moves récupérés via les routes de l'API.
+  }
+  ```
