@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
-import db from '../models/index.js';  // Import du module CommonJS en tant que default export
+import db from '../models/index.js';
 
-const { Pokemon } = db;  // Extraire le modèle Pokemon de l'export par défaut
+const { Pokemon, Move } = db;
 
 const seedDatabase = async () => {
     try {
@@ -17,9 +17,9 @@ const seedDatabase = async () => {
             })
         );
 
-        // Sauvegarder les Pokémon dans la base de données
+        // Sauvegarder les Pokémon et leurs capacités dans la base de données
         for (const poke of detailedPokemons) {
-            await Pokemon.create({
+            const newPokemon = await Pokemon.create({
                 name: poke.name,
                 type1: poke.types[0] ? poke.types[0].type.name : null,  // Le premier type
                 type2: poke.types[1] ? poke.types[1].type.name : null,  // Le deuxième type, s'il existe
@@ -29,6 +29,27 @@ const seedDatabase = async () => {
                 frontSprite: poke.sprites.front_default,  // Sprite avant
                 backSprite: poke.sprites.back_default,    // Sprite arrière
             });
+
+            // Récupérer les capacités du Pokémon (maximum 4)
+            const moves = poke.moves.slice(0, 4); // Limiter à 4 capacités
+
+            for (const move of moves) {
+                const moveDataResponse = await fetch(move.move.url);
+                const moveData = await moveDataResponse.json();
+
+                const newMove = await Move.create({
+                    name: moveData.name,
+                    type: moveData.type.name,
+                    power: moveData.power,
+                    pp: moveData.pp,
+                    accuracy: moveData.accuracy,
+                });
+
+                // Associer le move au Pokémon via la table de liaison
+                await newPokemon.addMove(newMove);
+                console.log(`Inserted move ${moveData.name} for ${poke.name}`);
+            }
+
             console.log(`Inserted ${poke.name} successfully`);
         }
     } catch (err) {

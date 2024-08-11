@@ -35,11 +35,11 @@ module.exports = {
       },
       frontSprite: {
         type: Sequelize.STRING,
-        allowNull: true  // Permettre les valeurs nulles si tous les Pokémons n'ont pas d'image
+        allowNull: true
       },
       backSprite: {
         type: Sequelize.STRING,
-        allowNull: true  // Permettre les valeurs nulles si tous les Pokémons n'ont pas d'image
+        allowNull: true
       },
       createdAt: {
         allowNull: false,

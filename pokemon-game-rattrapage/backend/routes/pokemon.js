@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Pokemon, User, PokemonTeam } = require('../models');
+const { Pokemon, User, PokemonTeam, Move } = require('../models');
 
 // Route pour récupérer tous les Pokémon
 router.get('/', async (req, res) => {
@@ -12,28 +12,33 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Route pour récupérer un Pokémon par son ID
+// Route pour récupérer un Pokémon par son ID, avec ses capacités (moves)
 router.get('/:id', async (req, res) => {
     try {
-        const pokemon = await Pokemon.findByPk(req.params.id);
+        const pokemon = await Pokemon.findByPk(req.params.id, {
+            include: [
+                {
+                    model: Move,
+                    as: 'moves' // Inclure les moves du Pokémon dans la réponse
+                }
+            ]
+        });
+
         if (pokemon) {
-            res.json(pokemon);
+            res.json(pokemon); // Retourne le Pokémon avec ses moves
         } else {
-            res.status(404).json({ message: "Pokemon not found" });
+            res.status(404).json({ message: "Pokémon non trouvé" });
         }
     } catch (err) {
-        res.status(500).json({ message: "Server error" });
+        console.error('Erreur serveur:', err);
+        res.status(500).json({ message: "Erreur serveur" });
     }
 });
 
 // Route pour ajouter un Pokémon à l'équipe d'un utilisateur
 router.post('/add-pokemon', async (req, res) => {
-    console.log('Session:', req.session);
-
     try {
         const userId = global.currentUserId;
-        console.log('Session UserID:', userId);
-
         const { pokemonId } = req.body;
 
         if (!userId) {
@@ -48,7 +53,7 @@ router.post('/add-pokemon', async (req, res) => {
         }
 
         if (!pokemon) {
-            return res.status(404).json({ message: "Pokemon non trouvé" });
+            return res.status(404).json({ message: "Pokémon non trouvé" });
         }
 
         const teamCount = await PokemonTeam.count({
@@ -74,7 +79,7 @@ router.post('/add-pokemon', async (req, res) => {
     }
 });
 
-// Route pour récupérer l'équipe de Pokémon d'un utilisateur
+// Route pour récupérer l'équipe de Pokémon d'un utilisateur, avec leurs capacités
 router.get('/user/team', async (req, res) => {
     try {
         const userId = global.currentUserId;
@@ -87,13 +92,14 @@ router.get('/user/team', async (req, res) => {
                 {
                     model: Pokemon,
                     as: 'pokemons',
-                    through: { where: { isInTeam: true } }
+                    through: { where: { isInTeam: true } },
+                    include: [{ model: Move, as: 'moves' }] // Inclure les moves de chaque Pokémon
                 }
             ]
         });
 
         if (user) {
-            res.json(user.pokemons); // Retourne les Pokémon dans l'équipe
+            res.json(user.pokemons); // Retourne les Pokémon dans l'équipe avec leurs moves
         } else {
             res.status(404).json({ message: "Utilisateur non trouvé" });
         }
@@ -103,7 +109,7 @@ router.get('/user/team', async (req, res) => {
     }
 });
 
-// Route pour récupérer tous les Pokémon possédés par un utilisateur (dans et hors de l'équipe)
+// Route pour récupérer tous les Pokémon possédés par un utilisateur, avec leurs capacités
 router.get('/user/pokemons', async (req, res) => {
     try {
         const userId = global.currentUserId;
@@ -116,12 +122,13 @@ router.get('/user/pokemons', async (req, res) => {
                 {
                     model: Pokemon,
                     as: 'pokemons',
+                    include: [{ model: Move, as: 'moves' }] // Inclure les moves de chaque Pokémon
                 }
             ]
         });
 
         if (user) {
-            res.json(user.pokemons); // Retourne tous les Pokémon possédés par l'utilisateur
+            res.json(user.pokemons); // Retourne tous les Pokémon possédés par l'utilisateur avec leurs moves
         } else {
             res.status(404).json({ message: "Utilisateur non trouvé" });
         }
@@ -134,23 +141,19 @@ router.get('/user/pokemons', async (req, res) => {
 // Route pour retirer un Pokémon de l'équipe de l'utilisateur
 router.post('/remove-from-team', async (req, res) => {
     try {
-        const userId = global.currentUserId;  // Récupérer l'ID de l'utilisateur
-        const { pokemonId } = req.body;  // Extraire pokemonId de req.body
-
-        console.log(`UserID: ${userId}, PokemonID: ${pokemonId}`);
+        const userId = global.currentUserId;
+        const { pokemonId } = req.body;
 
         if (!userId) {
             return res.status(401).json({ message: "Utilisateur non authentifié" });
         }
 
-        // Mettre à jour le Pokémon pour le retirer de l'équipe (mettre isInTeam à false)
         const updatedPokemonTeam = await PokemonTeam.update(
-            { isInTeam: false },  // Nouvelle valeur de isInTeam
-            { where: { userId: userId, pokemonId: pokemonId } }  // Condition de mise à jour
+            { isInTeam: false },
+            { where: { userId: userId, pokemonId: pokemonId } }
         );
 
         if (updatedPokemonTeam[0] === 0) {
-            // Si aucun enregistrement n'a été mis à jour
             return res.status(404).json({ message: "Le Pokémon n'a pas été trouvé dans l'équipe." });
         }
 
@@ -161,35 +164,30 @@ router.post('/remove-from-team', async (req, res) => {
     }
 });
 
+// Route pour ajouter un Pokémon à l'équipe de l'utilisateur
 router.post('/add-to-team', async (req, res) => {
     try {
-        const userId = global.currentUserId;  // Récupérer l'ID de l'utilisateur
-        const { pokemonId } = req.body;  // Extraire pokemonId de req.body
-
-        console.log(`UserID: ${userId}, PokemonID: ${pokemonId}`);
+        const userId = global.currentUserId;
+        const { pokemonId } = req.body;
 
         if (!userId) {
             return res.status(401).json({ message: "Utilisateur non authentifié" });
         }
 
-        // Mettre à jour le Pokémon pour le l'ajouter à l'équipe (mettre isInTeam à false)
         const updatedPokemonTeam = await PokemonTeam.update(
-            { isInTeam: true },  // Nouvelle valeur de isInTeam
-            { where: { userId: userId, pokemonId: pokemonId } }  // Condition de mise à jour
+            { isInTeam: true },
+            { where: { userId: userId, pokemonId: pokemonId } }
         );
 
         if (updatedPokemonTeam[0] === 0) {
-            // Si aucun enregistrement n'a été mis à jour
             return res.status(404).json({ message: "Le Pokémon n'a pas été trouvé dans l'équipe." });
         }
 
-        res.json({ message: "Le Pokémon a été retiré de votre équipe." });
+        res.json({ message: "Le Pokémon a été ajouté à votre équipe." });
     } catch (err) {
         console.error('Erreur serveur:', err);
         res.status(500).json({ message: "Erreur serveur" });
     }
 });
 
-
 module.exports = router;
-

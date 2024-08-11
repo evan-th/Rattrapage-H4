@@ -34,5 +34,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   });
 
+  Pokemon.associate = function (models) {
+    // Définir l'association many-to-many avec le modèle Move via la table de liaison "PokemonMoves"
+    Pokemon.belongsToMany(models.Move, {
+      through: 'PokemonMoves',
+      as: 'moves',
+      foreignKey: 'pokemonId',
+      otherKey: 'moveId'
+    });
+  };
+
   return Pokemon;
 };
