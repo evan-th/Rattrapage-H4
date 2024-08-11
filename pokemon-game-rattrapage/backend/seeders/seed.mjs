@@ -26,6 +26,8 @@ const seedDatabase = async () => {
                 hp: poke.stats.find(stat => stat.stat.name === 'hp').base_stat,
                 attack: poke.stats.find(stat => stat.stat.name === 'attack').base_stat,
                 defense: poke.stats.find(stat => stat.stat.name === 'defense').base_stat,
+                frontSprite: poke.sprites.front_default,  // Sprite avant
+                backSprite: poke.sprites.back_default,    // Sprite arrière
             });
             console.log(`Inserted ${poke.name} successfully`);
         }

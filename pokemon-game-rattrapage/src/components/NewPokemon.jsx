@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 function NewPokemon() {
-  // Suppression de la prop userId
   const [pokemon, setPokemon] = useState(null);
   const [message, setMessage] = useState('');
 
@@ -53,10 +52,20 @@ function NewPokemon() {
         {pokemon && (
           <div className="mt-6 text-center">
             <h3 className="text-xl font-bold text-gray-800">{pokemon.name}</h3>
-            <p>Type : {pokemon.type}</p>
+            <p>
+              Type : {pokemon.type1} {pokemon.type2 && `/${pokemon.type2}`}
+            </p>
             <p>HP : {pokemon.hp}</p>
             <p>Attaque : {pokemon.attack}</p>
             <p>Défense : {pokemon.defense}</p>
+            {/* Affichage du frontSprite */}
+            {pokemon.frontSprite && (
+              <img
+                src={pokemon.frontSprite}
+                alt={`${pokemon.name} sprite`}
+                className="mx-auto mt-4"
+              />
+            )}
           </div>
         )}
         {message && (
