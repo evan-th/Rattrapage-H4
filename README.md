@@ -35,20 +35,23 @@ Installez toutes les dépendances nécessaires pour le projet en exécutant :
 
 `npm install`
 
-3. **Configurer la base de données :**
+3. **Acceder au dossier backend :**
+
+`cd backend`
+
+4. **Configurer la base de données :**
 
 Exécutez les migrations pour créer les tables nécessaires :
-`cd backend`
 
 `npx sequelize-cli db:migrate`
 
-4. **Remplir la base de données avec des données initiales :**
+5. **Remplir la base de données avec des données initiales :**
 
 Utilisez le script de seed pour remplir la base de données avec les données des Pokémon initiaux :
 
 `node seeders/seed.mjs`
 
-4. **Lancer le serveur**
+6. **Lancer le serveur**
 
 `node index.js`
 
