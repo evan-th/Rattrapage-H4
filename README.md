@@ -73,7 +73,7 @@ Le jeu Pokémon Rattrapage H4 est un jeu de combat où le joueur doit affronter 
 
 **Interface :** L'interface du jeu est simple et interactive, avec des boutons pour sélectionner les attaques et des messages pour indiquer les résultats du combat.
 
-# Pokémon Game - API Documentation
+# API Documentation
 
 ## API Base URL
 
@@ -85,24 +85,24 @@ http://localhost:5001/api
 
 - **Description :** Créer un compte utilisateur.
 - **Corps de la requête :**
-  ````json
+  ```json
   {
-      "username": "string",
-      "email": "string",
-      "password": "string"
-  }```
-  ````
+    "username": "string",
+    "email": "string",
+    "password": "string"
+  }
+  ```
 
 ### 2. **POST `/api/users/login`**
 
 - **Description :** Connexion d'un utilisateur.
 - **Corps de la requête :**
-  ````json
+  ```json
   {
-      "email": "string",
-      "password": "string"
-  }```
-  ````
+    "email": "string",
+    "password": "string"
+  }
+  ```
 
 ### Gestion des Pokémon
 
