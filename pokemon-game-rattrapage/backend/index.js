@@ -46,13 +46,7 @@ sequelize.sync()
     });
 
 app.use(express.json());
-app.get('/check-session', (req, res) => {
-    if (req.session.userId) {
-        res.json({ message: `Session active pour l'utilisateur ID: ${req.session.userId}` });
-    } else {
-        res.status(401).json({ message: "Session non active" });
-    }
-});
+
 
 app.use('/api/pokemons', pokemonRoutes); // Routes Pokémon
 app.use('/api/users', userRoutes); // Routes Utilisateurs
