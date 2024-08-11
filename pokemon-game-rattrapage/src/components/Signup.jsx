@@ -31,7 +31,7 @@ function Signup() {
         setUsername('');
         setEmail('');
         setPassword('');
-        navigate('/menu'); // Rediriger vers le MainMenu après une inscription réussie
+        navigate('/login'); // Rediriger vers le MainMenu après une inscription réussie
       }
     } catch (err) {
       setError("Erreur lors de l'inscription. Veuillez réessayer.");

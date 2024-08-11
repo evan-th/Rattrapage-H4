@@ -1,12 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Combat() {
   const gameContainer = useRef(null);
+  const navigate = useNavigate();
+  const [message, setMessage] = useState(null);
+  const [turnCount, setTurnCount] = useState(0);
 
   useEffect(() => {
-    // Requête pour obtenir l'équipe du joueur
     async function fetchPlayerTeam() {
       try {
         const response = await axios.get(
@@ -22,7 +25,6 @@ function Combat() {
       }
     }
 
-    // Requête pour générer 10 Pokémon ennemis aléatoires
     async function fetchEnemyPokemons() {
       try {
         const randomIds = Array.from(
@@ -50,12 +52,12 @@ function Combat() {
 
       const config = {
         type: Phaser.AUTO,
-        width: window.innerWidth, // Utilisation de la largeur de la fenêtre
+        width: window.innerWidth,
         height: 600,
-        backgroundColor: '#0000FF', // Fond bleu
+        backgroundColor: '#3b82f6',
         scale: {
-          mode: Phaser.Scale.RESIZE, // Ajuste la taille du jeu avec la fenêtre sans redimensionnement infini
-          autoCenter: Phaser.Scale.CENTER_BOTH, // Centre automatiquement le contenu
+          mode: Phaser.Scale.RESIZE,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
         },
         scene: {
           preload: preload,
@@ -69,9 +71,10 @@ function Combat() {
 
       let playerIndex = 0;
       let enemyIndex = 0;
+      let enemySprites = [];
+      let playerMovesButtons = []; // Stocker les références des boutons des mouvements du joueur
 
       function preload() {
-        // Charger les sprites des Pokémon du joueur et des ennemis
         playerTeam.forEach((pokemon, index) => {
           this.load.image(`playerPokemon${index}`, pokemon.frontSprite);
         });
@@ -81,7 +84,6 @@ function Combat() {
       }
 
       function create() {
-        // Vérification des données avant de les utiliser
         if (
           !playerTeam ||
           playerTeam.length === 0 ||
@@ -94,7 +96,6 @@ function Combat() {
           return;
         }
 
-        // Afficher le premier Pokémon du joueur et le premier ennemi
         this.playerPokemon = this.add.sprite(
           150,
           300,
@@ -106,7 +107,6 @@ function Combat() {
           `enemyPokemon${enemyIndex}`,
         );
 
-        // Afficher les HP
         this.playerHP = this.add.text(
           100,
           250,
@@ -120,75 +120,155 @@ function Combat() {
           { fontSize: '20px', fill: '#FFF' },
         );
 
-        // Afficher les capacités du Pokémon du joueur
+        const startX = 50;
+        const startY = 50;
+        const offsetX = 50;
+        enemySprites = enemyTeam.slice(1).map((pokemon, i) => {
+          return this.add
+            .sprite(startX + i * offsetX, startY, `enemyPokemon${i + 1}`)
+            .setScale(0.5)
+            .setAlpha(0.5);
+        });
+
+        displayPlayerMoves.call(this); // Afficher les mouvements du Pokémon du joueur actuel
+
+        // Afficher le compteur de tours
+        this.turnText = this.add.text(
+          window.innerWidth - 100,
+          20,
+          `Tour: ${turnCount}`,
+          { fontSize: '20px', fill: '#FFF' },
+        );
+      }
+
+      const displayPlayerMoves = function () {
+        // Supprimer les mouvements précédents
+        playerMovesButtons.forEach((element) => element.destroy());
+        playerMovesButtons = [];
+
+        const moveBoxWidth = 200; // Augmenter la largeur des rectangles
+        const moveBoxHeight = 50;
+        const movePadding = 20;
+        const startX = 50;
+        const startY = 400;
+
         if (playerTeam[playerIndex].moves) {
           playerTeam[playerIndex].moves.forEach((move, i) => {
-            this.add
-              .text(50, 400 + i * 30, move.name, {
-                fontSize: '20px',
-                fill: '#FFF',
-              })
+            const row = Math.floor(i / 2);
+            const col = i % 2;
+
+            const moveBox = this.add
+              .rectangle(
+                startX + col * (moveBoxWidth + movePadding),
+                startY + row * (moveBoxHeight + movePadding),
+                moveBoxWidth,
+                moveBoxHeight,
+                0xffffff, // Couleur de fond blanche
+              )
+              .setOrigin(0)
+              .setStrokeStyle(2, 0x000000) // Bordure noire
               .setInteractive()
               .on('pointerdown', () =>
                 handlePlayerAttack.call(
-                  this, // Assurer que `this` est bien la scène
+                  this,
                   move,
                   playerTeam[playerIndex],
                   enemyTeam[enemyIndex],
                 ),
               );
+
+            const moveText = this.add.text(
+              moveBox.x + moveBoxWidth / 2,
+              moveBox.y + moveBoxHeight / 2,
+              `${move.name} ${move.power || 10} dégâts`, // Affichage du nom et des dégâts
+              {
+                fontSize: '16px', // Ajuster la taille de la police si nécessaire
+                fill: '#000', // Couleur du texte noire
+              },
+            );
+            moveText.setOrigin(0.5); // Centrer le texte dans le rectangle
+            playerMovesButtons.push(moveBox, moveText); // Ajouter le texte et le rectangle au tableau
           });
         } else {
           console.warn(
             "Le Pokémon sélectionné n'a pas de mouvements disponibles.",
           );
         }
-      }
+      };
 
       const handlePlayerAttack = function (move, playerPokemon, enemyPokemon) {
-        // Appliquer les dégâts à l'ennemi
+        // Animation de l'attaque du joueur
+        this.tweens.add({
+          targets: this.playerPokemon,
+          x: 180, // Déplacement vers la droite lors de l'attaque
+          duration: 100,
+          yoyo: true, // Revenir à la position initiale
+        });
+
         const damage = move.power || 10;
         enemyPokemon.hp -= damage;
         this.enemyHP.setText(`HP: ${enemyPokemon.hp}`);
 
-        // Vérifier si l'ennemi est vaincu
+        setTurnCount((prevTurnCount) => {
+          const newTurnCount = prevTurnCount + 1;
+          this.turnText.setText(`Tour: ${newTurnCount}`);
+          return newTurnCount;
+        });
+
         if (enemyPokemon.hp <= 0) {
           enemyIndex++;
           if (enemyIndex >= enemyTeam.length) {
-            alert('Vous avez vaincu tous les ennemis!');
-            this.scene.restart();
+            setMessage('victory');
+            setTimeout(() => navigate('/menu'), 5000);
             return;
           } else {
             this.enemyPokemon.setTexture(`enemyPokemon${enemyIndex}`);
             this.enemyHP.setText(`HP: ${enemyTeam[enemyIndex].hp}`);
+            if (enemySprites[enemyIndex - 1]) {
+              enemySprites[enemyIndex - 1].destroy();
+            }
           }
         }
 
-        // L'ennemi riposte
-        handleEnemyAttack.call(this, playerPokemon, enemyPokemon);
+        // Délai d'une seconde avant l'attaque de l'ennemi
+        setTimeout(() => {
+          handleEnemyAttack.call(this, playerPokemon, enemyPokemon);
+        }, 1000);
       };
 
       const handleEnemyAttack = function (playerPokemon, enemyPokemon) {
-        const damage = 10; // Dommages de l'ennemi
+        // Animation de l'attaque de l'ennemi
+        this.tweens.add({
+          targets: this.enemyPokemon,
+          x: 620, // Déplacement vers la gauche lors de l'attaque
+          duration: 100,
+          yoyo: true, // Revenir à la position initiale
+        });
+
+        const damage = 10;
         playerPokemon.hp -= damage;
         this.playerHP.setText(`HP: ${playerPokemon.hp}`);
 
-        // Vérifier si le Pokémon du joueur est vaincu
+        setTurnCount((prevTurnCount) => {
+          const newTurnCount = prevTurnCount + 1;
+          this.turnText.setText(`Tour: ${newTurnCount}`);
+          return newTurnCount;
+        });
+
         if (playerPokemon.hp <= 0) {
           playerIndex++;
           if (playerIndex >= playerTeam.length) {
-            alert('Vous avez perdu!');
-            this.scene.restart();
+            setMessage('defeat');
+            setTimeout(() => navigate('/menu'), 5000);
           } else {
             this.playerPokemon.setTexture(`playerPokemon${playerIndex}`);
             this.playerHP.setText(`HP: ${playerTeam[playerIndex].hp}`);
+            displayPlayerMoves.call(this); // Réinitialiser les mouvements pour le nouveau Pokémon
           }
         }
       };
 
-      function update() {
-        // Logique de mise à jour du jeu, si nécessaire
-      }
+      function update() {}
 
       return () => {
         game.destroy(true);
@@ -196,9 +276,66 @@ function Combat() {
     }
 
     startGame();
-  }, []);
+  }, [navigate]);
 
-  return <div ref={gameContainer} style={{ height: '100vh' }}></div>;
+  return (
+    <div ref={gameContainer} style={{ height: '100vh', position: 'relative' }}>
+      <button
+        style={{
+          position: 'absolute',
+          top: '10px',
+          left: '10px',
+          padding: '10px 20px',
+          backgroundColor: '#fff',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          zIndex: 1000,
+        }}
+        onClick={() => navigate('/menu')}
+      >
+        Menu
+      </button>
+      {message === 'victory' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '20px',
+            backgroundColor: '#fff',
+            border: '1px solid #000',
+            borderRadius: '10px',
+            zIndex: 1000,
+            textAlign: 'center',
+          }}
+        >
+          <h2>Vous avez vaincu tous les Pokémon !</h2>
+          <p>Vous allez être redirigé vers le menu dans 5 secondes...</p>
+        </div>
+      )}
+      {message === 'defeat' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '20px',
+            backgroundColor: '#fff',
+            border: '1px solid #000',
+            borderRadius: '10px',
+            zIndex: 1000,
+            textAlign: 'center',
+          }}
+        >
+          <h2>Vous avez perdu !</h2>
+          <p>Vous allez être redirigé vers le menu dans 5 secondes...</p>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default Combat;

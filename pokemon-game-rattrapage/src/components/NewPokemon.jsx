@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import MenuButton from './MenuButton'; // Importer le bouton Menu
 
 function NewPokemon() {
   const [pokemon, setPokemon] = useState(null);
@@ -38,7 +39,10 @@ function NewPokemon() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 relative">
+      {' '}
+      {/* Ajout de `relative` pour le positionnement du bouton */}
+      <MenuButton /> {/* Ajout du bouton Menu */}
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
         <h2 className="text-2xl font-bold text-center text-gray-700">
           Obtenir un nouveau Pokémon

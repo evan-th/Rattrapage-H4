@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import MenuButton from './MenuButton'; // Importer le bouton Menu
 
 function ManageTeam() {
   const [team, setTeam] = useState([]);
@@ -79,7 +80,10 @@ function ManageTeam() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100 relative">
+      {' '}
+      {/* Ajout de `relative` pour que le bouton Menu fonctionne correctement */}
+      <MenuButton /> {/* Ajout du bouton Menu */}
       <div className="w-1/2 p-4">
         <h2 className="text-2xl font-bold text-center text-gray-700">
           Mon Équipe
